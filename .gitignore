@@ -1,0 +1,42 @@
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Env / local secrets
+.env
+.env.*
+!.env.example
+
+# Project-local backups
+app_basic_backup/
+
+# Dependencies
+app/vendor/
+
+# Yii runtime and generated assets
+app/*/runtime/
+app/*/web/assets/
+app/*/runtime/**
+app/*/web/assets/**
+
+# Logs / dumps
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.dump
+
+# Local config overrides
+app/*/config/*-local.php
+app/*/config/params-local.php
+app/*/config/main-local.php
+app/*/config/test-local.php
+app/*/config/codeception-local.php
+
+# Test artifacts
+app/*/tests/_output/
+app/*/tests/_support/_generated/
+
+# Docker local overrides
+docker-compose.override.yml

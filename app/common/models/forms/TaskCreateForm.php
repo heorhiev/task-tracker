@@ -1,0 +1,48 @@
+<?php
+
+namespace common\models\forms;
+
+use common\models\Task;
+use yii\base\Model;
+
+class TaskCreateForm extends Model
+{
+    public $title;
+    public $description;
+    public $status = Task::STATUS_NEW;
+    public $priority = Task::PRIORITY_MEDIUM;
+    public $due_date;
+
+    public function rules(): array
+    {
+        return [
+            [['title', 'status', 'priority'], 'required'],
+            [['description'], 'string'],
+            [['title'], 'string', 'max' => 255],
+            [['status'], 'in', 'range' => array_keys(Task::statusOptions())],
+            [['priority'], 'in', 'range' => array_keys(Task::priorityOptions())],
+            [['due_date'], 'safe'],
+        ];
+    }
+
+    public function beforeValidate(): bool
+    {
+        if (!parent::beforeValidate()) {
+            return false;
+        }
+
+        $this->due_date = $this->normalizeDate($this->due_date);
+
+        return true;
+    }
+
+    private function normalizeDate($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $timestamp = strtotime((string) $value);
+        return $timestamp !== false ? date('Y-m-d H:i:s', $timestamp) : (string) $value;
+    }
+}

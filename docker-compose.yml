@@ -1,0 +1,65 @@
+services:
+  frontend:
+    image: nginx:1.27-alpine
+    container_name: task_tracker_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/html
+      - ./docker/nginx/frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+  backend:
+    image: nginx:1.27-alpine
+    container_name: task_tracker_backend
+    ports:
+      - "8081:80"
+    volumes:
+      - ./app:/var/www/html
+      - ./docker/nginx/backend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+  api:
+    image: nginx:1.27-alpine
+    container_name: task_tracker_api
+    ports:
+      - "8082:80"
+    volumes:
+      - ./app:/var/www/html
+      - ./docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - php
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: task_tracker_php
+    working_dir: /var/www/html
+    environment:
+      PHP_IDE_CONFIG: serverName=task-tracker
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: task_tracker
+      DB_USER: task_user
+      DB_PASSWORD: task_password
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    volumes:
+      - ./app:/var/www/html
+
+  db:
+    image: postgres:16
+    container_name: task_tracker_db
+    environment:
+      POSTGRES_DB: task_tracker
+      POSTGRES_USER: task_user
+      POSTGRES_PASSWORD: task_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
