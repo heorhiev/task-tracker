@@ -40,7 +40,7 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertTrue($project->save());
 
         $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_MARK_PROJECT_DEFAULT,
+            'command' => TelegramCommandHandlerService::COMMAND_SET_DEFAULT_PROJECT,
             'payload' => ['name' => 'Bot Beta'],
         ], null);
 
@@ -69,5 +69,22 @@ class TelegramCommandHandlerServiceTest extends Unit
         ], null);
 
         $this->assertStringStartsWith('Unknown command.', $result);
+    }
+
+    public function testHandleGetDefaultProject(): void
+    {
+        $project = new Project([
+            'name' => 'Default Bot Project',
+            'status' => Project::STATUS_ACTIVE,
+            'is_default' => 1,
+        ]);
+        $this->assertTrue($project->save());
+
+        $result = $this->service->handle([
+            'command' => TelegramCommandHandlerService::COMMAND_GET_DEFAULT_PROJECT,
+            'payload' => [],
+        ], null);
+
+        $this->assertSame('Current default project: Default Bot Project (#' . $project->id . ')', $result);
     }
 }

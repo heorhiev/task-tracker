@@ -10,8 +10,9 @@ class TelegramCommandHandlerService
 {
     public const COMMAND_UNKNOWN = 'unknown';
     public const COMMAND_CREATE_PROJECT = 'create_project';
-    public const COMMAND_MARK_PROJECT_DEFAULT = 'mark_project_default';
+    public const COMMAND_SET_DEFAULT_PROJECT = 'set_default_project';
     public const COMMAND_CREATE_TASK = 'create_task';
+    public const COMMAND_GET_DEFAULT_PROJECT = 'get_default_project';
 
     private TaskService $taskService;
     private ProjectService $projectService;
@@ -41,7 +42,7 @@ class TelegramCommandHandlerService
             return 'Project created: #' . $project->id;
         }
 
-        if ($command === self::COMMAND_MARK_PROJECT_DEFAULT) {
+        if ($command === self::COMMAND_SET_DEFAULT_PROJECT) {
             $projectName = trim((string) ($payload['name'] ?? ''));
             $project = $this->projectService->setDefaultProjectByName($projectName);
 
@@ -68,6 +69,12 @@ class TelegramCommandHandlerService
             return $task !== null ? 'Task created: #' . $task->id : 'Task creation failed';
         }
 
-        return 'Unknown command. Use: create project \"name\", mark as default \"name\", create task \"title\"';
+        if ($command === self::COMMAND_GET_DEFAULT_PROJECT) {
+            $project = $this->projectService->getDefaultProject();
+
+            return 'Current default project: ' . $project->name . ' (#' . $project->id . ')';
+        }
+
+        return 'Unknown command. Use: create project \"name\", set default project \"name\", create task \"title\", default project';
     }
 }

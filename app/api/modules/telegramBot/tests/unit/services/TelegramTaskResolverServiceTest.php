@@ -23,11 +23,11 @@ class TelegramTaskResolverServiceTest extends Unit
         $this->assertSame('Alpha', $result['payload']['name']);
     }
 
-    public function testResolveMarkAsDefaultCommand(): void
+    public function testResolveSetDefaultProjectCommand(): void
     {
-        $result = $this->service->resolve('mark as default "Alpha"');
+        $result = $this->service->resolve('set default project "Alpha"');
 
-        $this->assertSame(TelegramCommandHandlerService::COMMAND_MARK_PROJECT_DEFAULT, $result['command']);
+        $this->assertSame(TelegramCommandHandlerService::COMMAND_SET_DEFAULT_PROJECT, $result['command']);
         $this->assertSame('Alpha', $result['payload']['name']);
     }
 
@@ -44,6 +44,14 @@ class TelegramTaskResolverServiceTest extends Unit
         $result = $this->service->resolve('random text');
 
         $this->assertSame(TelegramCommandHandlerService::COMMAND_UNKNOWN, $result['command']);
+        $this->assertSame([], $result['payload']);
+    }
+
+    public function testResolveDefaultProjectCommand(): void
+    {
+        $result = $this->service->resolve('default project');
+
+        $this->assertSame(TelegramCommandHandlerService::COMMAND_GET_DEFAULT_PROJECT, $result['command']);
         $this->assertSame([], $result['payload']);
     }
 }

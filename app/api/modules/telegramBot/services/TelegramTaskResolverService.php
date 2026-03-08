@@ -18,9 +18,9 @@ class TelegramTaskResolverService
             ];
         }
 
-        if (preg_match('/^mark\s+as\s+default\s+"([^"]+)"$/i', $normalized, $matches) === 1) {
+        if (preg_match('/^set\s+default\s+project\s+"([^"]+)"$/i', $normalized, $matches) === 1) {
             return [
-                'command' => TelegramCommandHandlerService::COMMAND_MARK_PROJECT_DEFAULT,
+                'command' => TelegramCommandHandlerService::COMMAND_SET_DEFAULT_PROJECT,
                 'payload' => ['name' => trim((string) $matches[1])],
             ];
         }
@@ -29,6 +29,13 @@ class TelegramTaskResolverService
             return [
                 'command' => TelegramCommandHandlerService::COMMAND_CREATE_TASK,
                 'payload' => ['title' => trim((string) $matches[1])],
+            ];
+        }
+
+        if (preg_match('/^default\s+project$/i', $normalized) === 1) {
+            return [
+                'command' => TelegramCommandHandlerService::COMMAND_GET_DEFAULT_PROJECT,
+                'payload' => [],
             ];
         }
 
