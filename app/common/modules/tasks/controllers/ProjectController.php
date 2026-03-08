@@ -39,6 +39,7 @@ class ProjectController extends Controller
                 'actions' => [
                     'delete' => ['POST'],
                     'change-status' => ['POST'],
+                    'set-default' => ['POST'],
                 ],
             ],
         ];
@@ -95,7 +96,7 @@ class ProjectController extends Controller
     public function actionDelete(int $id): Response
     {
         $model = $this->findModel($id);
-        if ((int) $model->id === Project::DEFAULT_PROJECT_ID) {
+        if ((bool) $model->is_default) {
             if (Yii::$app->request->isAjax) {
                 Yii::$app->response->format = Response::FORMAT_JSON;
                 return $this->asJson(['success' => false, 'message' => 'Default project cannot be deleted.']);
@@ -134,6 +135,24 @@ class ProjectController extends Controller
             'success' => true,
             'message' => 'Status updated.',
         ]);
+    }
+
+    public function actionSetDefault(int $id): Response
+    {
+        $project = $this->projectService->setDefaultProject($id);
+
+        if (Yii::$app->request->isAjax) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+
+            return $this->asJson([
+                'success' => $project !== null,
+                'message' => $project !== null ? 'Default project updated.' : 'Project not found.',
+            ]);
+        }
+
+        Yii::$app->session->setFlash($project !== null ? 'success' : 'error', $project !== null ? 'Default project updated.' : 'Project not found.');
+
+        return $this->redirect(['index']);
     }
 
     protected function findModel(int $id): Project

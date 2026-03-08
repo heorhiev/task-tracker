@@ -10,7 +10,7 @@ class ProjectSearch extends Project
     public function rules(): array
     {
         return [
-            [['id'], 'integer'],
+            [['id', 'is_default'], 'integer'],
             [['name', 'status'], 'safe'],
         ];
     }
@@ -39,6 +39,7 @@ class ProjectSearch extends Project
         $query->andFilterWhere([
             'id' => $this->id,
             'status' => $this->status,
+            'is_default' => $this->is_default,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name]);

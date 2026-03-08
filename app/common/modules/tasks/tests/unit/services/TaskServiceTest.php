@@ -43,7 +43,7 @@ class TaskServiceTest extends Unit
         $this->assertSame(Task::PRIORITY_HIGH, $persisted->priority);
         $this->assertNotNull($persisted->project_id);
 
-        $defaultProject = Project::findOne(Project::DEFAULT_PROJECT_ID);
+        $defaultProject = Project::find()->where(['is_default' => 1])->one();
         $this->assertNotNull($defaultProject);
         $this->assertSame((int) $defaultProject->id, (int) $persisted->project_id);
     }
@@ -92,5 +92,32 @@ class TaskServiceTest extends Unit
 
         $this->assertTrue($deleted);
         $this->assertNull(Task::findOne($task->id));
+    }
+
+    public function testSetDefaultProject(): void
+    {
+        $project = new Project([
+            'name' => 'Custom Project',
+            'status' => Project::STATUS_ACTIVE,
+            'is_default' => 0,
+        ]);
+        $this->assertTrue($project->save());
+
+        $task = new Task([
+            'title' => 'Switch project',
+            'status' => Task::STATUS_NEW,
+            'priority' => Task::PRIORITY_MEDIUM,
+            'project_id' => (int) $project->id,
+        ]);
+        $this->assertTrue($task->save());
+
+        $updated = $this->service->setDefaultProject((int) $task->id);
+
+        $this->assertNotNull($updated);
+        $this->assertNotNull($updated->project_id);
+
+        $defaultProject = Project::find()->where(['is_default' => 1])->one();
+        $this->assertNotNull($defaultProject);
+        $this->assertSame((int) $defaultProject->id, (int) $updated->project_id);
     }
 }

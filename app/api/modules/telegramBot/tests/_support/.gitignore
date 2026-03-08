@@ -1,0 +1,5 @@
+_output/*
+_data/*
+_build/*
+_support/_generated/*
+!.gitignore

@@ -16,6 +16,7 @@ use yii\bootstrap5\Html;
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'status')->dropDownList(Project::statusOptions()) ?>
+    <?= $form->field($model, 'is_default')->checkbox() ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>

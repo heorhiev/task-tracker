@@ -94,4 +94,37 @@ class ProjectServiceTest extends Unit
         $this->assertNotNull($persisted);
         $this->assertSame(Project::STATUS_ACTIVE, $persisted->status);
     }
+
+    public function testSetDefaultProject(): void
+    {
+        $first = new Project([
+            'name' => 'First',
+            'status' => Project::STATUS_ACTIVE,
+            'is_default' => 1,
+        ]);
+        $this->assertTrue($first->save());
+
+        $second = new Project([
+            'name' => 'Second',
+            'status' => Project::STATUS_ACTIVE,
+            'is_default' => 0,
+        ]);
+        $this->assertTrue($second->save());
+
+        $result = $this->service->setDefaultProject((int) $second->id);
+
+        $this->assertNotNull($result);
+        $this->assertSame((int) $second->id, (int) $result->id);
+        $this->assertSame(1, (int) $result->is_default);
+
+        $first->refresh();
+        $second->refresh();
+        $this->assertSame(0, (int) $first->is_default);
+        $this->assertSame(1, (int) $second->is_default);
+    }
+
+    public function testSetDefaultProjectReturnsNullForMissingProject(): void
+    {
+        $this->assertNull($this->service->setDefaultProject(999999));
+    }
 }

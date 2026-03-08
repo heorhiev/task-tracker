@@ -76,6 +76,18 @@ class TaskService
         return $task->delete() !== false;
     }
 
+    public function setDefaultProject(int $id): ?Task
+    {
+        $task = Task::findOne($id);
+        if ($task === null) {
+            return null;
+        }
+
+        $task->project_id = (int) $this->projectService->getDefaultProject()->id;
+
+        return $task->save(true, ['project_id', 'updated_at']) ? $task : null;
+    }
+
     private function resolveProjectId($projectId): int
     {
         if ($projectId !== null && $projectId !== '') {

@@ -35,6 +35,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'status',
                 'value' => Project::statusOptions()[$model->status] ?? $model->status,
             ],
+            [
+                'attribute' => 'is_default',
+                'value' => (bool) $model->is_default ? 'Yes' : 'No',
+            ],
             'created_at:datetime',
             'updated_at:datetime',
         ],

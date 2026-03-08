@@ -3,20 +3,29 @@
 namespace api\modules\telegramBot\controllers;
 
 use api\services\ApiKeyAuthService;
-use common\models\forms\TaskCreateForm;
-use common\modules\tasks\services\TaskService;
+use api\modules\telegramBot\services\TelegramCommandHandlerService;
+use api\modules\telegramBot\services\TelegramTaskResolverService;
 use Yii;
 use yii\web\Response;
 
 class DefaultController extends \yii\web\Controller
 {
     private ApiKeyAuthService $apiKeyAuthService;
-    private TaskService $taskService;
+    private TelegramTaskResolverService $telegramTaskResolverService;
+    private TelegramCommandHandlerService $telegramCommandHandlerService;
 
-    public function __construct($id, $module, ApiKeyAuthService $apiKeyAuthService = null, TaskService $taskService = null, $config = [])
+    public function __construct(
+        $id,
+        $module,
+        ApiKeyAuthService $apiKeyAuthService = null,
+        TelegramTaskResolverService $telegramTaskResolverService = null,
+        TelegramCommandHandlerService $telegramCommandHandlerService = null,
+        $config = []
+    )
     {
         $this->apiKeyAuthService = $apiKeyAuthService ?? new ApiKeyAuthService();
-        $this->taskService = $taskService ?? new TaskService();
+        $this->telegramTaskResolverService = $telegramTaskResolverService ?? new TelegramTaskResolverService();
+        $this->telegramCommandHandlerService = $telegramCommandHandlerService ?? new TelegramCommandHandlerService();
         parent::__construct($id, $module, $config);
     }
 
@@ -51,20 +60,11 @@ class DefaultController extends \yii\web\Controller
                 $telegram->sendMessage($chatId, 'hello world');
             }
         } elseif ($text !== '') {
-            $form = new TaskCreateForm([
-                'title' => $text,
-                'description' => $chatId !== null ? 'Created from Telegram chat ' . $chatId : 'Created from Telegram',
-            ]);
-
-            $task = $this->taskService->create($form);
+            $commandData = $this->telegramTaskResolverService->resolve($text);
+            $messageText = $this->telegramCommandHandlerService->handle($commandData, $chatId);
 
             if ($chatId !== null) {
-                $telegram->sendMessage(
-                    $chatId,
-                    $task !== null
-                        ? 'Task created: #' . $task->id
-                        : 'Task creation failed'
-                );
+                $telegram->sendMessage($chatId, $messageText);
             }
         }
 

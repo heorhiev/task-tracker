@@ -16,6 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 $changeStatusUrl = Url::to(['change-status']);
 $deleteUrl = Url::to(['delete']);
+$setDefaultUrl = Url::to(['set-default']);
 $csrfParam = Yii::$app->request->csrfParam;
 $csrfToken = Yii::$app->request->csrfToken;
 
@@ -56,6 +57,25 @@ $(document).on('click', '.js-delete-project', function (e) {
         alert('Failed to delete project');
       });
 });
+
+$(document).on('click', '.js-set-default-project', function (e) {
+    e.preventDefault();
+
+    const id = $(this).data('id');
+    const payload = {};
+    payload['{$csrfParam}'] = '{$csrfToken}';
+
+    $.post('{$setDefaultUrl}?id=' + id, payload)
+      .done(function (res) {
+        if (!res.success) {
+          alert(res.message || 'Failed to set default project');
+        }
+        $.pjax.reload({container: '#project-grid-pjax'});
+      })
+      .fail(function () {
+        alert('Failed to set default project');
+      });
+});
 JS;
 
 $this->registerJs($js);
@@ -92,13 +112,18 @@ $this->registerJs($js);
                     );
                 },
             ],
+            [
+                'attribute' => 'is_default',
+                'filter' => [1 => 'Yes', 0 => 'No'],
+                'value' => static fn(Project $model): string => (bool) $model->is_default ? 'Yes' : 'No',
+            ],
             'created_at:datetime',
             [
                 'class' => ActionColumn::class,
-                'template' => '{view} {update} {delete}',
+                'template' => '{view} {update} {set-default} {delete}',
                 'buttons' => [
                     'delete' => static function ($url, Project $model): string {
-                        if ((int) $model->id === Project::DEFAULT_PROJECT_ID) {
+                        if ((bool) $model->is_default) {
                             return '';
                         }
 
@@ -112,6 +137,16 @@ $this->registerJs($js);
                     },
                     'update' => static function ($url, Project $model): string {
                         return Html::a('Edit', ['update', 'id' => $model->id], ['class' => 'btn btn-sm btn-outline-primary']);
+                    },
+                    'set-default' => static function ($url, Project $model): string {
+                        if ((bool) $model->is_default) {
+                            return '';
+                        }
+
+                        return Html::a('Set Default', '#', [
+                            'class' => 'btn btn-sm btn-outline-success js-set-default-project',
+                            'data-id' => $model->id,
+                        ]);
                     },
                 ],
             ],
