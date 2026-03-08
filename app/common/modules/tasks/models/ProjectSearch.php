@@ -1,17 +1,17 @@
 <?php
 
-namespace common\models;
+namespace common\modules\tasks\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 
-class TaskSearch extends Task
+class ProjectSearch extends Project
 {
     public function rules(): array
     {
         return [
-            [['id', 'project_id'], 'integer'],
-            [['title', 'status', 'priority'], 'safe'],
+            [['id'], 'integer'],
+            [['name', 'status'], 'safe'],
         ];
     }
 
@@ -22,7 +22,7 @@ class TaskSearch extends Task
 
     public function search(array $params): ActiveDataProvider
     {
-        $query = Task::find()->with('project');
+        $query = Project::find();
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -39,11 +39,9 @@ class TaskSearch extends Task
         $query->andFilterWhere([
             'id' => $this->id,
             'status' => $this->status,
-            'priority' => $this->priority,
-            'project_id' => $this->project_id,
         ]);
 
-        $query->andFilterWhere(['ilike', 'title', $this->title]);
+        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

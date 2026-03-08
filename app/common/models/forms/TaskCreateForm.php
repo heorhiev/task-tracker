@@ -3,6 +3,7 @@
 namespace common\models\forms;
 
 use common\models\Task;
+use common\modules\tasks\models\Project;
 use yii\base\Model;
 
 class TaskCreateForm extends Model
@@ -11,6 +12,7 @@ class TaskCreateForm extends Model
     public $description;
     public $status = Task::STATUS_NEW;
     public $priority = Task::PRIORITY_MEDIUM;
+    public $project_id;
     public $due_date;
 
     public function rules(): array
@@ -18,10 +20,18 @@ class TaskCreateForm extends Model
         return [
             [['title', 'status', 'priority'], 'required'],
             [['description'], 'string'],
+            [['project_id'], 'integer'],
             [['title'], 'string', 'max' => 255],
             [['status'], 'in', 'range' => array_keys(Task::statusOptions())],
             [['priority'], 'in', 'range' => array_keys(Task::priorityOptions())],
             [['due_date'], 'safe'],
+            [
+                ['project_id'],
+                'exist',
+                'targetClass' => Project::class,
+                'targetAttribute' => ['project_id' => 'id'],
+                'skipOnEmpty' => true,
+            ],
         ];
     }
 

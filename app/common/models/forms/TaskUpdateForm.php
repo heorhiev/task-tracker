@@ -13,6 +13,7 @@ class TaskUpdateForm extends TaskCreateForm
         $form->description = $task->description;
         $form->status = $task->status;
         $form->priority = $task->priority;
+        $form->project_id = $task->project_id;
         $form->due_date = $task->due_date !== null ? date('Y-m-d\TH:i', strtotime((string) $task->due_date)) : null;
 
         return $form;

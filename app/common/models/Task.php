@@ -2,7 +2,9 @@
 
 namespace common\models;
 
+use common\modules\tasks\models\Project;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\db\Expression;
 
@@ -12,9 +14,11 @@ use yii\db\Expression;
  * @property string|null $description
  * @property string $status
  * @property string $priority
+ * @property int|null $project_id
  * @property string|null $due_date
  * @property string $created_at
  * @property string $updated_at
+ * @property-read Project|null $project
  */
 class Task extends ActiveRecord
 {
@@ -48,10 +52,18 @@ class Task extends ActiveRecord
         return [
             [['title', 'status', 'priority'], 'required'],
             [['description'], 'string'],
+            [['project_id'], 'integer'],
             [['title'], 'string', 'max' => 255],
             [['status'], 'in', 'range' => array_keys(self::statusOptions())],
             [['priority'], 'in', 'range' => array_keys(self::priorityOptions())],
             [['due_date'], 'safe'],
+            [
+                ['project_id'],
+                'exist',
+                'targetClass' => Project::class,
+                'targetAttribute' => ['project_id' => 'id'],
+                'skipOnEmpty' => true,
+            ],
         ];
     }
 
@@ -63,10 +75,16 @@ class Task extends ActiveRecord
             'description' => 'Description',
             'status' => 'Status',
             'priority' => 'Priority',
+            'project_id' => 'Project',
             'due_date' => 'Due Date',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
+    }
+
+    public function getProject(): ActiveQuery
+    {
+        return $this->hasOne(Project::class, ['id' => 'project_id']);
     }
 
     public function beforeValidate(): bool

@@ -2,13 +2,9 @@
 
 namespace common\modules\tasks\controllers;
 
-use common\models\forms\TaskCreateForm;
-use common\models\forms\TaskDeleteForm;
-use common\models\forms\TaskUpdateForm;
-use common\models\Task;
-use common\models\TaskSearch;
+use common\modules\tasks\models\Project;
+use common\modules\tasks\models\ProjectSearch;
 use common\modules\tasks\services\ProjectService;
-use common\modules\tasks\services\TaskService;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -16,13 +12,13 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-class DefaultController extends Controller
+class ProjectController extends Controller
 {
-    private TaskService $taskService;
+    private ProjectService $projectService;
 
-    public function __construct($id, $module, TaskService $taskService = null, $config = [])
+    public function __construct($id, $module, ProjectService $projectService = null, $config = [])
     {
-        $this->taskService = $taskService ?? new TaskService();
+        $this->projectService = $projectService ?? new ProjectService();
         parent::__construct($id, $module, $config);
     }
 
@@ -50,7 +46,7 @@ class DefaultController extends Controller
 
     public function actionIndex(): string
     {
-        $searchModel = new TaskSearch();
+        $searchModel = new ProjectSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -68,47 +64,55 @@ class DefaultController extends Controller
 
     public function actionCreate(): Response|string
     {
-        $form = new TaskCreateForm([
-            'project_id' => (new ProjectService())->getDefaultProject()->id,
+        $model = new Project([
+            'status' => Project::STATUS_ACTIVE,
         ]);
 
-        if ($form->load(Yii::$app->request->post()) && $this->taskService->create($form) !== null) {
-            Yii::$app->session->setFlash('success', 'Task created.');
+        if ($this->projectService->create($model, Yii::$app->request->post())) {
+            Yii::$app->session->setFlash('success', 'Project created.');
             return $this->redirect(['index']);
         }
 
         return $this->render('create', [
-            'model' => $form,
+            'model' => $model,
         ]);
     }
 
     public function actionUpdate(int $id): Response|string
     {
-        $task = $this->findModel($id);
-        $form = TaskUpdateForm::fromTask($task);
+        $model = $this->findModel($id);
 
-        if ($form->load(Yii::$app->request->post()) && $this->taskService->update($id, $form) !== null) {
-            Yii::$app->session->setFlash('success', 'Task updated.');
+        if ($this->projectService->update($model, Yii::$app->request->post())) {
+            Yii::$app->session->setFlash('success', 'Project updated.');
             return $this->redirect(['index']);
         }
 
         return $this->render('update', [
-            'model' => $form,
-            'task' => $task,
+            'model' => $model,
         ]);
     }
 
     public function actionDelete(int $id): Response
     {
-        $form = new TaskDeleteForm(['id' => $id]);
-        $deleted = $this->taskService->delete($form);
+        $model = $this->findModel($id);
+        if ((int) $model->id === Project::DEFAULT_PROJECT_ID) {
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return $this->asJson(['success' => false, 'message' => 'Default project cannot be deleted.']);
+            }
+
+            Yii::$app->session->setFlash('error', 'Default project cannot be deleted.');
+            return $this->redirect(['index']);
+        }
+
+        $deleted = $model->delete() !== false;
 
         if (Yii::$app->request->isAjax) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return $this->asJson(['success' => $deleted]);
         }
 
-        Yii::$app->session->setFlash($deleted ? 'success' : 'error', $deleted ? 'Task deleted.' : 'Task not found.');
+        Yii::$app->session->setFlash($deleted ? 'success' : 'error', $deleted ? 'Project deleted.' : 'Project not found.');
         return $this->redirect(['index']);
     }
 
@@ -117,21 +121,12 @@ class DefaultController extends Controller
         Yii::$app->response->format = Response::FORMAT_JSON;
 
         $model = $this->findModel($id);
-        $status = Yii::$app->request->post('status');
+        $status = (string) Yii::$app->request->post('status');
 
-        if (!array_key_exists((string) $status, Task::statusOptions())) {
+        if (!$this->projectService->changeStatus($model, $status)) {
             return $this->asJson([
                 'success' => false,
-                'message' => 'Invalid status value.',
-            ]);
-        }
-
-        $model->status = (string) $status;
-
-        if (!$model->save(true, ['status', 'updated_at'])) {
-            return $this->asJson([
-                'success' => false,
-                'message' => 'Unable to update status.',
+                'message' => 'Invalid status value or unable to update status.',
             ]);
         }
 
@@ -141,12 +136,12 @@ class DefaultController extends Controller
         ]);
     }
 
-    protected function findModel(int $id): Task
+    protected function findModel(int $id): Project
     {
-        if (($model = Task::findOne($id)) !== null) {
+        if (($model = Project::findOne($id)) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException('The requested task does not exist.');
+        throw new NotFoundHttpException('The requested project does not exist.');
     }
 }

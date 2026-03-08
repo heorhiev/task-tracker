@@ -1,0 +1,7 @@
+suite_namespace: common\modules\tasks\tests\unit
+actor: UnitTester
+modules:
+    enabled:
+        - Yii2:
+            part: [orm, fixtures]
+        - Asserts

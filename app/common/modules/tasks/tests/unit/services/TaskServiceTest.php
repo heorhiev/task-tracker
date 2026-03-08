@@ -1,11 +1,12 @@
 <?php
 
-namespace frontend\tests\unit\services;
+namespace common\modules\tasks\tests\unit\services;
 
 use common\models\forms\TaskCreateForm;
 use common\models\forms\TaskDeleteForm;
 use common\models\forms\TaskUpdateForm;
 use common\models\Task;
+use common\modules\tasks\models\Project;
 use common\modules\tasks\services\TaskService;
 use Codeception\Test\Unit;
 use Yii;
@@ -40,6 +41,11 @@ class TaskServiceTest extends Unit
         $persisted = Task::findOne($task->id);
         $this->assertNotNull($persisted);
         $this->assertSame(Task::PRIORITY_HIGH, $persisted->priority);
+        $this->assertNotNull($persisted->project_id);
+
+        $defaultProject = Project::findOne(Project::DEFAULT_PROJECT_ID);
+        $this->assertNotNull($defaultProject);
+        $this->assertSame((int) $defaultProject->id, (int) $persisted->project_id);
     }
 
     public function testUpdateTask(): void

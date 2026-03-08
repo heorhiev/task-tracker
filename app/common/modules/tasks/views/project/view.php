@@ -1,16 +1,17 @@
 <?php
 
+use common\modules\tasks\models\Project;
 use yii\bootstrap5\Html;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
-/** @var common\models\Task $model */
+/** @var Project $model */
 
-$this->title = $model->title;
-$this->params['breadcrumbs'][] = ['label' => 'Tasks', 'url' => ['index']];
+$this->title = $model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Projects', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="task-view">
+<div class="project-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -29,18 +30,13 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'title',
-            'description:ntext',
-            'status',
-            'priority',
+            'name',
             [
-                'attribute' => 'project_id',
-                'label' => 'Project',
-                'value' => $model->project !== null ? $model->project->name : '-',
+                'attribute' => 'status',
+                'value' => Project::statusOptions()[$model->status] ?? $model->status,
             ],
-            'due_date',
-            'created_at',
-            'updated_at',
+            'created_at:datetime',
+            'updated_at:datetime',
         ],
     ]) ?>
 

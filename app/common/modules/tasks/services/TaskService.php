@@ -9,8 +9,17 @@ use common\models\Task;
 
 class TaskService
 {
+    private ProjectService $projectService;
+
+    public function __construct(ProjectService $projectService = null)
+    {
+        $this->projectService = $projectService ?? new ProjectService();
+    }
+
     public function create(TaskCreateForm $form): ?Task
     {
+        $form->project_id = $this->resolveProjectId($form->project_id);
+
         if (!$form->validate()) {
             return null;
         }
@@ -21,6 +30,7 @@ class TaskService
             'description' => $form->description,
             'status' => $form->status,
             'priority' => $form->priority,
+            'project_id' => $form->project_id,
             'due_date' => $form->due_date,
         ], false);
 
@@ -34,6 +44,8 @@ class TaskService
             return null;
         }
 
+        $form->project_id = $this->resolveProjectId($form->project_id);
+
         if (!$form->validate()) {
             return null;
         }
@@ -43,6 +55,7 @@ class TaskService
             'description' => $form->description,
             'status' => $form->status,
             'priority' => $form->priority,
+            'project_id' => $form->project_id,
             'due_date' => $form->due_date,
         ], false);
 
@@ -61,5 +74,14 @@ class TaskService
         }
 
         return $task->delete() !== false;
+    }
+
+    private function resolveProjectId($projectId): int
+    {
+        if ($projectId !== null && $projectId !== '') {
+            return (int) $projectId;
+        }
+
+        return (int) $this->projectService->getDefaultProject()->id;
     }
 }

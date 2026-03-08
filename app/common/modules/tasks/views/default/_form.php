@@ -1,9 +1,11 @@
 <?php
 
 use common\models\Task;
+use common\modules\tasks\models\Project;
 use yii\base\Model;
 use yii\bootstrap5\ActiveForm;
 use yii\bootstrap5\Html;
+use yii\helpers\ArrayHelper;
 
 /** @var yii\web\View $this */
 /** @var Model $model */
@@ -21,6 +23,10 @@ use yii\bootstrap5\Html;
     <?= $form->field($model, 'status')->dropDownList(Task::statusOptions()) ?>
 
     <?= $form->field($model, 'priority')->dropDownList(Task::priorityOptions()) ?>
+
+    <?= $form->field($model, 'project_id')->dropDownList(
+        ArrayHelper::map(Project::find()->orderBy(['name' => SORT_ASC])->all(), 'id', 'name')
+    ) ?>
 
     <?= $form->field($model, 'due_date')->input('datetime-local') ?>
 

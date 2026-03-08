@@ -1,19 +1,17 @@
 <?php
 
-use common\models\Task;
 use common\modules\tasks\models\Project;
+use yii\bootstrap5\Html;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\helpers\Url;
-use yii\bootstrap5\Html;
-use yii\helpers\ArrayHelper;
 use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
-/** @var common\models\TaskSearch $searchModel */
+/** @var common\modules\tasks\models\ProjectSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Tasks';
+$this->title = 'Projects';
 $this->params['breadcrumbs'][] = $this->title;
 
 $changeStatusUrl = Url::to(['change-status']);
@@ -22,7 +20,7 @@ $csrfParam = Yii::$app->request->csrfParam;
 $csrfToken = Yii::$app->request->csrfToken;
 
 $js = <<<JS
-$(document).on('change', '.js-status-select', function () {
+$(document).on('change', '.js-project-status-select', function () {
     const id = $(this).data('id');
     const status = $(this).val();
     const payload = {status: status};
@@ -33,16 +31,16 @@ $(document).on('change', '.js-status-select', function () {
         if (!res.success) {
           alert(res.message || 'Failed to update status');
         }
-        $.pjax.reload({container: '#task-grid-pjax'});
+        $.pjax.reload({container: '#project-grid-pjax'});
       })
       .fail(function () {
         alert('Failed to update status');
       });
 });
 
-$(document).on('click', '.js-delete-task', function (e) {
+$(document).on('click', '.js-delete-project', function (e) {
     e.preventDefault();
-    if (!confirm('Delete this task?')) {
+    if (!confirm('Delete this project?')) {
       return;
     }
 
@@ -52,10 +50,10 @@ $(document).on('click', '.js-delete-task', function (e) {
 
     $.post('{$deleteUrl}?id=' + id, payload)
       .done(function () {
-        $.pjax.reload({container: '#task-grid-pjax'});
+        $.pjax.reload({container: '#project-grid-pjax'});
       })
       .fail(function () {
-        alert('Failed to delete task');
+        alert('Failed to delete project');
       });
 });
 JS;
@@ -63,65 +61,56 @@ JS;
 $this->registerJs($js);
 ?>
 
-<div class="task-index">
+<div class="project-index">
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Task', ['create'], ['class' => 'btn btn-success']) ?>
-        <?= Html::a('Manage Projects', ['/tasks/project/index'], ['class' => 'btn btn-outline-secondary']) ?>
+        <?= Html::a('Create Project', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
-    <?php Pjax::begin(['id' => 'task-grid-pjax']); ?>
+    <?php Pjax::begin(['id' => 'project-grid-pjax']); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-            'title',
+            ['class' => 'yii\\grid\\SerialColumn'],
+            'name',
             [
                 'attribute' => 'status',
-                'filter' => Task::statusOptions(),
+                'filter' => Project::statusOptions(),
                 'format' => 'raw',
-                'value' => static function (Task $model): string {
+                'value' => static function (Project $model): string {
                     return Html::dropDownList(
                         'status',
                         $model->status,
-                        Task::statusOptions(),
+                        Project::statusOptions(),
                         [
-                            'class' => 'form-select form-select-sm js-status-select',
+                            'class' => 'form-select form-select-sm js-project-status-select',
                             'data-id' => $model->id,
                         ]
                     );
                 },
             ],
-            [
-                'attribute' => 'priority',
-                'filter' => Task::priorityOptions(),
-                'value' => static fn(Task $model): string => Task::priorityOptions()[$model->priority] ?? $model->priority,
-            ],
-            [
-                'attribute' => 'project_id',
-                'label' => 'Project',
-                'filter' => ArrayHelper::map(Project::find()->orderBy(['name' => SORT_ASC])->all(), 'id', 'name'),
-                'value' => static fn(Task $model): string => $model->project !== null ? $model->project->name : '-',
-            ],
-            'due_date:datetime',
             'created_at:datetime',
             [
                 'class' => ActionColumn::class,
                 'template' => '{view} {update} {delete}',
                 'buttons' => [
-                    'delete' => static function ($url, Task $model): string {
+                    'delete' => static function ($url, Project $model): string {
+                        if ((int) $model->id === Project::DEFAULT_PROJECT_ID) {
+                            return '';
+                        }
+
                         return Html::a('Delete', '#', [
-                            'class' => 'btn btn-sm btn-outline-danger js-delete-task',
+                            'class' => 'btn btn-sm btn-outline-danger js-delete-project',
                             'data-id' => $model->id,
                         ]);
                     },
-                    'view' => static function ($url, Task $model): string {
+                    'view' => static function ($url, Project $model): string {
                         return Html::a('View', ['view', 'id' => $model->id], ['class' => 'btn btn-sm btn-outline-secondary']);
                     },
-                    'update' => static function ($url, Task $model): string {
+                    'update' => static function ($url, Project $model): string {
                         return Html::a('Edit', ['update', 'id' => $model->id], ['class' => 'btn btn-sm btn-outline-primary']);
                     },
                 ],

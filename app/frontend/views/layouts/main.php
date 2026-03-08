@@ -37,6 +37,7 @@ AppAsset::register($this);
     $menuItems = [];
     if (!Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Tasks', 'url' => ['/tasks/default/index']];
+        $menuItems[] = ['label' => 'Projects', 'url' => ['/tasks/project/index']];
     }
 
     echo Nav::widget([
