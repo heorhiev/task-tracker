@@ -10,6 +10,8 @@ use yii\web\Response;
 
 class DefaultController extends \yii\web\Controller
 {
+    public $enableCsrfValidation = false;
+
     private ApiKeyAuthService $apiKeyAuthService;
     private TelegramTaskResolverService $telegramTaskResolverService;
     private TelegramCommandHandlerService $telegramCommandHandlerService;

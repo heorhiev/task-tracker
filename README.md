@@ -1,50 +1,39 @@
-# Task Tracker - Yii2 Advanced
+# Task Tracker (Quick Start)
 
-Stack:
-- PHP 8.0 (Yii2 Advanced Template)
-- PostgreSQL 16
-- Nginx + PHP-FPM (Docker)
-- Server-rendered UI + jQuery + AJAX + PJAX
-
-## Project structure
-- `app/frontend` - user-facing app (tasks UI)
-- `app/backend` - admin app
-- `app/common` - shared models/forms/services
-- `app/console` - migrations/console commands
+## What it is
+Yii2 Advanced project with:
+- `frontend` (UI)
+- `backend`
+- `api` (Telegram webhook)
+- shared business logic in `common/modules/*`
 
 ## Run
 ```bash
 docker compose up -d --build --remove-orphans
+docker compose run --rm php php yii migrate --interactive=0
 ```
 
 ## URLs
 - Frontend: http://localhost:8080
 - Backend: http://localhost:8081
+- API: http://localhost:8082
+- API health: http://localhost:8082/health/webhook
 
-## Migrations
+## Fast test commands
 ```bash
-docker compose run --rm php sh -lc 'cd /var/www/html && php yii migrate --interactive=0'
+# Tasks module
+docker compose run --rm php sh -lc "cd common/modules/tasks && php ../../../vendor/bin/codecept run unit --no-ansi"
+
+# Telegram bot module
+docker compose run --rm php sh -lc "cd api/modules/telegramBot && php ../../../vendor/bin/codecept run unit --no-ansi"
 ```
 
-## Implemented Task module
-- Frontend module: `frontend/modules/tasks`
-- Routes: `/tasks/default/index`, `/tasks/default/create`, `/tasks/default/update`, `/tasks/default/view`
-- PJAX list update for filters/sort/pagination
-- AJAX status change: `POST /tasks/default/change-status?id=...`
-- AJAX delete: `POST /tasks/default/delete?id=...`
+## Module docs
+- Tasks: `app/common/modules/tasks/README.md`
+- Users: `app/common/modules/users/README.md`
+- Frontend Auth: `app/frontend/modules/auth/README.md`
+- API Telegram Bot: `app/api/modules/telegramBot/README.md`
 
-### Service/Form layer
-- `common/services/TaskService`
-- `common/models/forms/TaskCreateForm`
-- `common/models/forms/TaskUpdateForm`
-- `common/models/forms/TaskDeleteForm`
-
-### Unit tests
-```bash
-docker compose run --rm php sh -lc 'cd /var/www/html && vendor/bin/codecept run -c frontend unit services/TaskServiceTest.php'
-```
-
-Covers:
-- task creation
-- task update
-- task deletion
+## Notes
+- Telegram webhook URL must include `api-key` query param.
+- Telegram webhook controller has CSRF disabled.
