@@ -22,11 +22,6 @@ class CommandRegistryComponent extends Component
     public function init(): void
     {
         parent::init();
-        $this->registry = new CommandRegistry([], $this->unknownMessage);
-
-        foreach ($this->commands as $commandDefinition) {
-            $this->registry->register($this->createCommand($commandDefinition));
-        }
     }
 
     public function execute(string $text, array $context = []): CommandExecutionResult
@@ -36,13 +31,21 @@ class CommandRegistryComponent extends Component
 
     public function register(mixed $commandDefinition): void
     {
-        $this->getRegistry()->register($this->createCommand($commandDefinition));
+        $this->commands[] = $commandDefinition;
+
+        if ($this->registry !== null) {
+            $this->registry->register($this->createCommand($commandDefinition));
+        }
     }
 
     public function getRegistry(): CommandRegistry
     {
         if ($this->registry === null) {
-            throw new InvalidConfigException('Command registry has not been initialized.');
+            $this->registry = new CommandRegistry([], $this->unknownMessage);
+
+            foreach ($this->commands as $commandDefinition) {
+                $this->registry->register($this->createCommand($commandDefinition));
+            }
         }
 
         return $this->registry;
