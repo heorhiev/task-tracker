@@ -32,6 +32,13 @@ class TelegramTaskResolverService
             ];
         }
 
+        if (preg_match('/^create\s+idea\s+"([^"]+)"$/i', $normalized, $matches) === 1) {
+            return [
+                'command' => TelegramCommandHandlerService::COMMAND_CREATE_IDEA,
+                'payload' => ['title' => trim((string) $matches[1])],
+            ];
+        }
+
         if (preg_match('/^default\s+project$/i', $normalized) === 1) {
             return [
                 'command' => TelegramCommandHandlerService::COMMAND_GET_DEFAULT_PROJECT,

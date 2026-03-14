@@ -1,20 +1,19 @@
 <?php
 
-use common\models\Task;
 use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
+use yii\bootstrap5\Html;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
-use yii\helpers\Url;
-use yii\bootstrap5\Html;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
 use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
-/** @var common\models\TaskSearch $searchModel */
+/** @var common\modules\tasks\models\IdeaSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Tasks';
+$this->title = 'Ideas';
 $this->params['breadcrumbs'][] = $this->title;
 
 $changeStatusUrl = Url::to(['change-status']);
@@ -23,7 +22,7 @@ $csrfParam = Yii::$app->request->csrfParam;
 $csrfToken = Yii::$app->request->csrfToken;
 
 $js = <<<JS
-$(document).on('change', '.js-status-select', function () {
+$(document).on('change', '.js-idea-status-select', function () {
     const id = $(this).data('id');
     const status = $(this).val();
     const payload = {status: status};
@@ -34,16 +33,16 @@ $(document).on('change', '.js-status-select', function () {
         if (!res.success) {
           alert(res.message || 'Failed to update status');
         }
-        $.pjax.reload({container: '#task-grid-pjax'});
+        $.pjax.reload({container: '#idea-grid-pjax'});
       })
       .fail(function () {
         alert('Failed to update status');
       });
 });
 
-$(document).on('click', '.js-delete-task', function (e) {
+$(document).on('click', '.js-delete-idea', function (e) {
     e.preventDefault();
-    if (!confirm('Delete this task?')) {
+    if (!confirm('Delete this idea?')) {
       return;
     }
 
@@ -53,10 +52,10 @@ $(document).on('click', '.js-delete-task', function (e) {
 
     $.post('{$deleteUrl}?id=' + id, payload)
       .done(function () {
-        $.pjax.reload({container: '#task-grid-pjax'});
+        $.pjax.reload({container: '#idea-grid-pjax'});
       })
       .fail(function () {
-        alert('Failed to delete task');
+        alert('Failed to delete idea');
       });
 });
 JS;
@@ -64,16 +63,16 @@ JS;
 $this->registerJs($js);
 ?>
 
-<div class="task-index">
+<div class="idea-index">
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Task', ['create'], ['class' => 'btn btn-success']) ?>
-        <?= Html::a('Ideas', ['/tasks/idea/index'], ['class' => 'btn btn-outline-secondary']) ?>
+        <?= Html::a('Create Idea', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Tasks', ['/tasks/default/index'], ['class' => 'btn btn-outline-secondary']) ?>
         <?= Html::a('Manage Projects', ['/tasks/project/index'], ['class' => 'btn btn-outline-secondary']) ?>
     </p>
 
-    <?php Pjax::begin(['id' => 'task-grid-pjax']); ?>
+    <?php Pjax::begin(['id' => 'idea-grid-pjax']); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -83,53 +82,41 @@ $this->registerJs($js);
             'title',
             [
                 'attribute' => 'status',
-                'filter' => Task::statusOptions(),
+                'filter' => Idea::statusOptions(),
                 'format' => 'raw',
-                'value' => static function (Task $model): string {
+                'value' => static function (Idea $model): string {
                     return Html::dropDownList(
                         'status',
                         $model->status,
-                        Task::statusOptions(),
+                        Idea::statusOptions(),
                         [
-                            'class' => 'form-select form-select-sm js-status-select',
+                            'class' => 'form-select form-select-sm js-idea-status-select',
                             'data-id' => $model->id,
                         ]
                     );
                 },
             ],
             [
-                'attribute' => 'priority',
-                'filter' => Task::priorityOptions(),
-                'value' => static fn(Task $model): string => Task::priorityOptions()[$model->priority] ?? $model->priority,
-            ],
-            [
                 'attribute' => 'project_id',
                 'label' => 'Project',
                 'filter' => ArrayHelper::map(Project::find()->orderBy(['name' => SORT_ASC])->all(), 'id', 'name'),
-                'value' => static fn(Task $model): string => $model->project !== null ? $model->project->name : '-',
+                'value' => static fn(Idea $model): string => $model->project !== null ? $model->project->name : '-',
             ],
-            [
-                'attribute' => 'idea_id',
-                'label' => 'Idea',
-                'filter' => ArrayHelper::map(Idea::find()->orderBy(['title' => SORT_ASC])->all(), 'id', 'title'),
-                'value' => static fn(Task $model): string => $model->idea !== null ? $model->idea->title : '-',
-            ],
-            'due_date:datetime',
             'created_at:datetime',
             [
                 'class' => ActionColumn::class,
                 'template' => '{view} {update} {delete}',
                 'buttons' => [
-                    'delete' => static function ($url, Task $model): string {
+                    'delete' => static function ($url, Idea $model): string {
                         return Html::a('Delete', '#', [
-                            'class' => 'btn btn-sm btn-outline-danger js-delete-task',
+                            'class' => 'btn btn-sm btn-outline-danger js-delete-idea',
                             'data-id' => $model->id,
                         ]);
                     },
-                    'view' => static function ($url, Task $model): string {
+                    'view' => static function ($url, Idea $model): string {
                         return Html::a('View', ['view', 'id' => $model->id], ['class' => 'btn btn-sm btn-outline-secondary']);
                     },
-                    'update' => static function ($url, Task $model): string {
+                    'update' => static function ($url, Idea $model): string {
                         return Html::a('Edit', ['update', 'id' => $model->id], ['class' => 'btn btn-sm btn-outline-primary']);
                     },
                 ],

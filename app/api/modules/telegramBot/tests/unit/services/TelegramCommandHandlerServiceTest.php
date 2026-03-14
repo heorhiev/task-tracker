@@ -5,6 +5,7 @@ namespace api\modules\telegramBot\tests\unit\services;
 use api\modules\telegramBot\services\TelegramCommandHandlerService;
 use Codeception\Test\Unit;
 use common\models\Task;
+use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
 use Yii;
 
@@ -15,6 +16,7 @@ class TelegramCommandHandlerServiceTest extends Unit
     protected function _before(): void
     {
         $this->service = new TelegramCommandHandlerService();
+        Yii::$app->db->createCommand('DELETE FROM {{%idea}}')->execute();
         Yii::$app->db->createCommand('DELETE FROM {{%task}}')->execute();
         Yii::$app->db->createCommand('DELETE FROM {{%project}}')->execute();
     }
@@ -59,6 +61,18 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertStringStartsWith('Task created: #', $result);
         $task = Task::find()->where(['title' => 'Bot Task'])->one();
         $this->assertNotNull($task);
+    }
+
+    public function testHandleCreateIdea(): void
+    {
+        $result = $this->service->handle([
+            'command' => TelegramCommandHandlerService::COMMAND_CREATE_IDEA,
+            'payload' => ['title' => 'Bot Idea'],
+        ], 12345);
+
+        $this->assertStringStartsWith('Idea created: #', $result);
+        $idea = Idea::find()->where(['title' => 'Bot Idea'])->one();
+        $this->assertNotNull($idea);
     }
 
     public function testHandleUnknownCommand(): void

@@ -4,13 +4,13 @@ use yii\bootstrap5\Html;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
-/** @var common\models\Task $model */
+/** @var common\modules\tasks\models\Idea $model */
 
 $this->title = $model->title;
-$this->params['breadcrumbs'][] = ['label' => 'Tasks', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Ideas', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="task-view">
+<div class="idea-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -32,18 +32,11 @@ $this->params['breadcrumbs'][] = $this->title;
             'title',
             'description:ntext',
             'status',
-            'priority',
             [
                 'attribute' => 'project_id',
                 'label' => 'Project',
                 'value' => $model->project !== null ? $model->project->name : '-',
             ],
-            [
-                'attribute' => 'idea_id',
-                'label' => 'Idea',
-                'value' => $model->idea !== null ? $model->idea->title : '-',
-            ],
-            'due_date',
             'created_at',
             'updated_at',
         ],

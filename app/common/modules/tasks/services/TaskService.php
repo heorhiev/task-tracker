@@ -31,6 +31,7 @@ class TaskService
             'status' => $form->status,
             'priority' => $form->priority,
             'project_id' => $form->project_id,
+            'idea_id' => $this->resolveIdeaId($form->idea_id),
             'due_date' => $form->due_date,
         ], false);
 
@@ -56,6 +57,7 @@ class TaskService
             'status' => $form->status,
             'priority' => $form->priority,
             'project_id' => $form->project_id,
+            'idea_id' => $this->resolveIdeaId($form->idea_id),
             'due_date' => $form->due_date,
         ], false);
 
@@ -95,5 +97,14 @@ class TaskService
         }
 
         return (int) $this->projectService->getDefaultProject()->id;
+    }
+
+    private function resolveIdeaId($ideaId): ?int
+    {
+        if ($ideaId === null || $ideaId === '') {
+            return null;
+        }
+
+        return (int) $ideaId;
     }
 }

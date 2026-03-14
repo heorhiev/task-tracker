@@ -1,6 +1,7 @@
 <?php
 
 use common\models\Task;
+use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
 use yii\base\Model;
 use yii\bootstrap5\ActiveForm;
@@ -26,6 +27,11 @@ use yii\helpers\ArrayHelper;
 
     <?= $form->field($model, 'project_id')->dropDownList(
         ArrayHelper::map(Project::find()->orderBy(['name' => SORT_ASC])->all(), 'id', 'name')
+    ) ?>
+
+    <?= $form->field($model, 'idea_id')->dropDownList(
+        ArrayHelper::map(Idea::find()->orderBy(['title' => SORT_ASC])->all(), 'id', 'title'),
+        ['prompt' => 'No idea']
     ) ?>
 
     <?= $form->field($model, 'due_date')->input('datetime-local') ?>

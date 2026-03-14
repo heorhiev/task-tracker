@@ -39,6 +39,14 @@ class TelegramTaskResolverServiceTest extends Unit
         $this->assertSame('Write docs', $result['payload']['title']);
     }
 
+    public function testResolveCreateIdeaCommand(): void
+    {
+        $result = $this->service->resolve('create idea "Voice inbox digest"');
+
+        $this->assertSame(TelegramCommandHandlerService::COMMAND_CREATE_IDEA, $result['command']);
+        $this->assertSame('Voice inbox digest', $result['payload']['title']);
+    }
+
     public function testResolveUnknownCommand(): void
     {
         $result = $this->service->resolve('random text');

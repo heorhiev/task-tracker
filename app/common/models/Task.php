@@ -2,6 +2,7 @@
 
 namespace common\models;
 
+use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
@@ -15,10 +16,12 @@ use yii\db\Expression;
  * @property string $status
  * @property string $priority
  * @property int|null $project_id
+ * @property int|null $idea_id
  * @property string|null $due_date
  * @property string $created_at
  * @property string $updated_at
  * @property-read Project|null $project
+ * @property-read Idea|null $idea
  */
 class Task extends ActiveRecord
 {
@@ -52,7 +55,7 @@ class Task extends ActiveRecord
         return [
             [['title', 'status', 'priority'], 'required'],
             [['description'], 'string'],
-            [['project_id'], 'integer'],
+            [['project_id', 'idea_id'], 'integer'],
             [['title'], 'string', 'max' => 255],
             [['status'], 'in', 'range' => array_keys(self::statusOptions())],
             [['priority'], 'in', 'range' => array_keys(self::priorityOptions())],
@@ -62,6 +65,13 @@ class Task extends ActiveRecord
                 'exist',
                 'targetClass' => Project::class,
                 'targetAttribute' => ['project_id' => 'id'],
+                'skipOnEmpty' => true,
+            ],
+            [
+                ['idea_id'],
+                'exist',
+                'targetClass' => Idea::class,
+                'targetAttribute' => ['idea_id' => 'id'],
                 'skipOnEmpty' => true,
             ],
         ];
@@ -76,6 +86,7 @@ class Task extends ActiveRecord
             'status' => 'Status',
             'priority' => 'Priority',
             'project_id' => 'Project',
+            'idea_id' => 'Idea',
             'due_date' => 'Due Date',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
@@ -85,6 +96,11 @@ class Task extends ActiveRecord
     public function getProject(): ActiveQuery
     {
         return $this->hasOne(Project::class, ['id' => 'project_id']);
+    }
+
+    public function getIdea(): ActiveQuery
+    {
+        return $this->hasOne(Idea::class, ['id' => 'idea_id']);
     }
 
     public function beforeValidate(): bool

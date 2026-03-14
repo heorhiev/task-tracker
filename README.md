@@ -46,6 +46,19 @@ docker compose run --rm php sh -lc "cd api/modules/telegramBot && php ../../../v
 docker compose run --rm php php yii inbox/process-pending-voice 20
 ```
 
+## Voice Message Flow
+1. Telegram sends a voice webhook update to `api/modules/telegramBot`.
+2. `telegramBot` detects `voice` input and downloads the Telegram audio file by `file_id`.
+3. The downloaded audio is stored through `common/modules/fileManager`.
+4. A `common/modules/inbox` record is created with `status=pending`.
+5. The original audio file is linked to the inbox message as an attachment with role `original`.
+6. A console worker runs `php yii inbox/process-pending-voice`.
+7. The worker loads pending voice messages from `inbox`.
+8. If needed, audio is normalized with `ffmpeg` and saved as a `normalized` attachment.
+9. The speech-to-text layer transcribes audio into text.
+10. The recognized text is resolved into Telegram task/project commands and executed.
+11. The inbox message is marked `processed` or `failed`.
+
 ## Voice Processing Requirements
 For real Telegram voice-to-command processing you need:
 - `OPENAI_API_KEY`

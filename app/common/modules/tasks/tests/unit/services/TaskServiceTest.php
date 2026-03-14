@@ -6,6 +6,7 @@ use common\models\forms\TaskCreateForm;
 use common\models\forms\TaskDeleteForm;
 use common\models\forms\TaskUpdateForm;
 use common\models\Task;
+use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
 use common\modules\tasks\services\TaskService;
 use Codeception\Test\Unit;
@@ -18,6 +19,7 @@ class TaskServiceTest extends Unit
     protected function _before(): void
     {
         $this->service = new TaskService();
+        Yii::$app->db->createCommand('DELETE FROM {{%idea}}')->execute();
         Yii::$app->db->createCommand('DELETE FROM {{%task}}')->execute();
     }
 
@@ -50,6 +52,12 @@ class TaskServiceTest extends Unit
 
     public function testUpdateTask(): void
     {
+        $idea = new Idea([
+            'title' => 'Source idea',
+            'status' => Idea::STATUS_NEW,
+        ]);
+        $this->assertTrue($idea->save());
+
         $source = new Task([
             'title' => 'Old title',
             'description' => 'Old description',
@@ -63,6 +71,7 @@ class TaskServiceTest extends Unit
             'description' => 'Updated description',
             'status' => Task::STATUS_IN_PROGRESS,
             'priority' => Task::PRIORITY_MEDIUM,
+            'idea_id' => $idea->id,
             'due_date' => '2026-03-11T09:00',
         ]);
 
@@ -75,6 +84,7 @@ class TaskServiceTest extends Unit
         $persisted = Task::findOne($source->id);
         $this->assertSame('Updated description', $persisted->description);
         $this->assertSame(Task::PRIORITY_MEDIUM, $persisted->priority);
+        $this->assertSame((int) $idea->id, (int) $persisted->idea_id);
     }
 
     public function testDeleteTask(): void
