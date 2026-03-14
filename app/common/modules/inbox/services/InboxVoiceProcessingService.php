@@ -2,13 +2,13 @@
 
 namespace common\modules\inbox\services;
 
-use api\modules\telegramBot\services\TelegramCommandHandlerService;
-use api\modules\telegramBot\services\TelegramTaskResolverService;
 use common\components\SpeechToTextComponent;
 use common\modules\fileManager\models\StoredFile;
 use common\modules\fileManager\services\FileStorageService;
 use common\modules\inbox\models\InboxMessage;
 use common\modules\inbox\models\InboxMessageAttachment;
+use common\modules\tasks\services\command\TaskCommandExecutor;
+use common\modules\tasks\services\command\TaskCommandParser;
 use common\services\speechTools\normalization\AudioNormalizationService;
 use common\services\speechTools\SpeechToTextServiceInterface;
 use common\services\speechTools\StubSpeechToTextService;
@@ -22,8 +22,8 @@ class InboxVoiceProcessingService
     private FileStorageService $fileStorageService;
     private AudioNormalizationService $audioNormalizationService;
     private SpeechToTextServiceInterface $speechToTextService;
-    private TelegramTaskResolverService $telegramTaskResolverService;
-    private TelegramCommandHandlerService $telegramCommandHandlerService;
+    private TaskCommandParser $taskCommandParser;
+    private TaskCommandExecutor $taskCommandExecutor;
 
     public function __construct(
         InboxMessageStatusService $statusService = null,
@@ -31,8 +31,8 @@ class InboxVoiceProcessingService
         FileStorageService $fileStorageService = null,
         AudioNormalizationService $audioNormalizationService = null,
         SpeechToTextServiceInterface $speechToTextService = null,
-        TelegramTaskResolverService $telegramTaskResolverService = null,
-        TelegramCommandHandlerService $telegramCommandHandlerService = null
+        TaskCommandParser $taskCommandParser = null,
+        TaskCommandExecutor $taskCommandExecutor = null
     )
     {
         $this->statusService = $statusService ?? new InboxMessageStatusService();
@@ -40,8 +40,8 @@ class InboxVoiceProcessingService
         $this->fileStorageService = $fileStorageService ?? new FileStorageService();
         $this->audioNormalizationService = $audioNormalizationService ?? new AudioNormalizationService();
         $this->speechToTextService = $speechToTextService ?? $this->createSpeechToTextService();
-        $this->telegramTaskResolverService = $telegramTaskResolverService ?? new TelegramTaskResolverService();
-        $this->telegramCommandHandlerService = $telegramCommandHandlerService ?? new TelegramCommandHandlerService();
+        $this->taskCommandParser = $taskCommandParser ?? new TaskCommandParser();
+        $this->taskCommandExecutor = $taskCommandExecutor ?? new TaskCommandExecutor();
     }
 
     /**
@@ -76,8 +76,8 @@ class InboxVoiceProcessingService
                 throw new Exception('Speech-to-text returned an empty transcription.');
             }
 
-            $commandData = $this->telegramTaskResolverService->resolve($transcriptionText);
-            $handlerMessage = $this->telegramCommandHandlerService->handle($commandData, $message->external_chat_id);
+            $commandData = $this->taskCommandParser->parse($transcriptionText);
+            $handlerMessage = $this->taskCommandExecutor->execute($commandData, $message->external_chat_id);
             $resolvedCommand = json_encode($commandData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             if (!$this->statusService->markProcessed($message, $transcriptionText, $resolvedCommand ?: null)) {

@@ -1,30 +1,30 @@
 <?php
 
-namespace api\modules\telegramBot\tests\unit\services;
+namespace common\modules\tasks\tests\unit\services\command;
 
-use api\modules\telegramBot\services\TelegramCommandHandlerService;
 use Codeception\Test\Unit;
 use common\models\Task;
 use common\modules\tasks\models\Idea;
 use common\modules\tasks\models\Project;
+use common\modules\tasks\services\command\TaskCommandExecutor;
 use Yii;
 
-class TelegramCommandHandlerServiceTest extends Unit
+class TaskCommandExecutorTest extends Unit
 {
-    private TelegramCommandHandlerService $service;
+    private TaskCommandExecutor $service;
 
     protected function _before(): void
     {
-        $this->service = new TelegramCommandHandlerService();
+        $this->service = new TaskCommandExecutor();
         Yii::$app->db->createCommand('DELETE FROM {{%idea}}')->execute();
         Yii::$app->db->createCommand('DELETE FROM {{%task}}')->execute();
         Yii::$app->db->createCommand('DELETE FROM {{%project}}')->execute();
     }
 
-    public function testHandleCreateProject(): void
+    public function testExecuteCreateProject(): void
     {
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_CREATE_PROJECT,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_CREATE_PROJECT,
             'payload' => ['name' => 'Bot Alpha'],
         ], null);
 
@@ -32,7 +32,7 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertNotNull(Project::findOne(['name' => 'Bot Alpha']));
     }
 
-    public function testHandleMarkProjectDefault(): void
+    public function testExecuteMarkProjectDefault(): void
     {
         $project = new Project([
             'name' => 'Bot Beta',
@@ -41,8 +41,8 @@ class TelegramCommandHandlerServiceTest extends Unit
         ]);
         $this->assertTrue($project->save());
 
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_SET_DEFAULT_PROJECT,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_SET_DEFAULT_PROJECT,
             'payload' => ['name' => 'Bot Beta'],
         ], null);
 
@@ -51,10 +51,10 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertSame(1, (int) $project->is_default);
     }
 
-    public function testHandleCreateTask(): void
+    public function testExecuteCreateTask(): void
     {
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_CREATE_TASK,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_CREATE_TASK,
             'payload' => ['title' => 'Bot Task'],
         ], 12345);
 
@@ -63,10 +63,10 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertNotNull($task);
     }
 
-    public function testHandleCreateIdea(): void
+    public function testExecuteCreateIdea(): void
     {
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_CREATE_IDEA,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_CREATE_IDEA,
             'payload' => ['title' => 'Bot Idea'],
         ], 12345);
 
@@ -75,17 +75,17 @@ class TelegramCommandHandlerServiceTest extends Unit
         $this->assertNotNull($idea);
     }
 
-    public function testHandleUnknownCommand(): void
+    public function testExecuteUnknownCommand(): void
     {
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_UNKNOWN,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_UNKNOWN,
             'payload' => [],
         ], null);
 
         $this->assertStringStartsWith('Unknown command.', $result);
     }
 
-    public function testHandleGetDefaultProject(): void
+    public function testExecuteGetDefaultProject(): void
     {
         $project = new Project([
             'name' => 'Default Bot Project',
@@ -94,8 +94,8 @@ class TelegramCommandHandlerServiceTest extends Unit
         ]);
         $this->assertTrue($project->save());
 
-        $result = $this->service->handle([
-            'command' => TelegramCommandHandlerService::COMMAND_GET_DEFAULT_PROJECT,
+        $result = $this->service->execute([
+            'command' => TaskCommandExecutor::COMMAND_GET_DEFAULT_PROJECT,
             'payload' => [],
         ], null);
 

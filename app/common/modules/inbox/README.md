@@ -62,7 +62,7 @@ Attachment roles currently used:
 6. `AudioNormalizationService` from `common/services/speechTools/normalization` checks whether the original audio format is acceptable for transcription
 7. if needed, audio is converted to a normalized `wav` file and linked as `InboxMessageAttachment(role=normalized)`
 8. STT service produces text
-9. the text is resolved through Telegram command services
+9. the text is resolved through shared task command services
 10. the message is marked `processed` or `failed`
 
 ## Services
@@ -79,7 +79,7 @@ Attachment roles currently used:
 - `common/modules/fileManager` provides file persistence
 - `common/components/SpeechToTextComponent.php` provides the Yii application wrapper for STT
 - `common/services/speechTools` provides real and stub STT implementations
-- `api/modules/telegramBot` command resolver/handler execute recognized commands
+- `common/modules/tasks/services/command` parses and executes recognized commands
 - `console/controllers/InboxController.php` runs the background worker command
 
 ## Console Command

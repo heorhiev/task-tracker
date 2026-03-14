@@ -24,8 +24,8 @@ https://<domain>/?api-key=<API_KEY>
 ## Text Command Flow
 1. `DefaultController` receives the webhook update
 2. `TelegramIncomingMessageService` normalizes the incoming payload
-3. `TelegramTaskResolverService` maps text to a command structure
-4. `TelegramCommandHandlerService` executes the command using task/project services
+3. `TaskCommandParser` maps text to a command structure
+4. `TaskCommandExecutor` executes the command using task/project services
 5. Telegram gets a text reply
 
 ## Voice Message Flow
@@ -38,7 +38,7 @@ https://<domain>/?api-key=<API_KEY>
 7. later, a console command processes pending voice records from `inbox`
 8. during background processing, audio may be normalized with `ffmpeg`
 9. OpenAI transcription converts audio to text
-10. the recognized text is mapped to an existing Telegram command flow
+10. the recognized text is mapped to the shared task command flow
 
 ## Supported Text Commands
 - `create project "name"`
@@ -50,9 +50,9 @@ https://<domain>/?api-key=<API_KEY>
 ## Core Files
 - `controllers/DefaultController.php`
 - `services/TelegramIncomingMessageService.php`
-- `services/TelegramTaskResolverService.php`
-- `services/TelegramCommandHandlerService.php`
 - `services/TelegramVoiceInboxService.php`
+- `common/modules/tasks/services/command/TaskCommandParser.php`
+- `common/modules/tasks/services/command/TaskCommandExecutor.php`
 
 ## Integration Points
 - `common/components/TelegramComponent.php` wraps Telegram SDK calls

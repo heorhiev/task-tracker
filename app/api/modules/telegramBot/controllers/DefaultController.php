@@ -3,10 +3,10 @@
 namespace api\modules\telegramBot\controllers;
 
 use api\services\ApiKeyAuthService;
-use api\modules\telegramBot\services\TelegramCommandHandlerService;
 use api\modules\telegramBot\services\TelegramIncomingMessageService;
-use api\modules\telegramBot\services\TelegramTaskResolverService;
 use api\modules\telegramBot\services\TelegramVoiceInboxService;
+use common\modules\tasks\services\command\TaskCommandExecutor;
+use common\modules\tasks\services\command\TaskCommandParser;
 use Yii;
 use yii\web\Response;
 
@@ -16,8 +16,8 @@ class DefaultController extends \yii\web\Controller
 
     private ApiKeyAuthService $apiKeyAuthService;
     private TelegramIncomingMessageService $telegramIncomingMessageService;
-    private TelegramTaskResolverService $telegramTaskResolverService;
-    private TelegramCommandHandlerService $telegramCommandHandlerService;
+    private TaskCommandParser $taskCommandParser;
+    private TaskCommandExecutor $taskCommandExecutor;
     private TelegramVoiceInboxService $telegramVoiceInboxService;
 
     public function __construct(
@@ -25,16 +25,16 @@ class DefaultController extends \yii\web\Controller
         $module,
         ApiKeyAuthService $apiKeyAuthService = null,
         TelegramIncomingMessageService $telegramIncomingMessageService = null,
-        TelegramTaskResolverService $telegramTaskResolverService = null,
-        TelegramCommandHandlerService $telegramCommandHandlerService = null,
+        TaskCommandParser $taskCommandParser = null,
+        TaskCommandExecutor $taskCommandExecutor = null,
         TelegramVoiceInboxService $telegramVoiceInboxService = null,
         $config = []
     )
     {
         $this->apiKeyAuthService = $apiKeyAuthService ?? new ApiKeyAuthService();
         $this->telegramIncomingMessageService = $telegramIncomingMessageService ?? new TelegramIncomingMessageService();
-        $this->telegramTaskResolverService = $telegramTaskResolverService ?? new TelegramTaskResolverService();
-        $this->telegramCommandHandlerService = $telegramCommandHandlerService ?? new TelegramCommandHandlerService();
+        $this->taskCommandParser = $taskCommandParser ?? new TaskCommandParser();
+        $this->taskCommandExecutor = $taskCommandExecutor ?? new TaskCommandExecutor();
         $this->telegramVoiceInboxService = $telegramVoiceInboxService ?? new TelegramVoiceInboxService();
         parent::__construct($id, $module, $config);
     }
@@ -69,8 +69,8 @@ class DefaultController extends \yii\web\Controller
                 $telegram->sendMessage($chatId, 'hello world');
             }
         } elseif ($incomingMessage['type'] === TelegramIncomingMessageService::TYPE_TEXT && $text !== '') {
-            $commandData = $this->telegramTaskResolverService->resolve($text);
-            $messageText = $this->telegramCommandHandlerService->handle($commandData, $chatId);
+            $commandData = $this->taskCommandParser->parse($text);
+            $messageText = $this->taskCommandExecutor->execute($commandData, $chatId);
 
             if ($chatId !== null) {
                 $telegram->sendMessage($chatId, $messageText);

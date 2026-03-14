@@ -1,14 +1,14 @@
 <?php
 
-namespace api\modules\telegramBot\services;
+namespace common\modules\tasks\services\command;
 
 use common\models\forms\TaskCreateForm;
 use common\modules\tasks\models\forms\IdeaCreateForm;
-use common\modules\tasks\services\ProjectService;
 use common\modules\tasks\services\IdeaService;
+use common\modules\tasks\services\ProjectService;
 use common\modules\tasks\services\TaskService;
 
-class TelegramCommandHandlerService
+class TaskCommandExecutor
 {
     public const COMMAND_UNKNOWN = 'unknown';
     public const COMMAND_CREATE_PROJECT = 'create_project';
@@ -35,7 +35,7 @@ class TelegramCommandHandlerService
     /**
      * @param array{command:string,payload:array<string,string>} $commandData
      */
-    public function handle(array $commandData, $chatId): string
+    public function execute(array $commandData, $chatId): string
     {
         $command = (string) ($commandData['command'] ?? self::COMMAND_UNKNOWN);
         $payload = (array) ($commandData['payload'] ?? []);
