@@ -24,8 +24,9 @@ https://<domain>/?api-key=<API_KEY>
 ## Text Command Flow
 1. `DefaultController` receives the webhook update
 2. `TelegramIncomingMessageService` normalizes the incoming payload
-3. `TaskCommandParser` maps text to a command structure
-4. `TaskCommandExecutor` executes the command using task/project services
+3. `commandRegistry` receives the normalized text
+4. the registry finds a matching command implementation from `common/modules/tasks/commands`
+5. the matched command parses and executes the request
 5. Telegram gets a text reply
 
 ## Voice Message Flow
@@ -51,8 +52,9 @@ https://<domain>/?api-key=<API_KEY>
 - `controllers/DefaultController.php`
 - `services/TelegramIncomingMessageService.php`
 - `services/TelegramVoiceInboxService.php`
-- `common/modules/tasks/services/command/TaskCommandParser.php`
-- `common/modules/tasks/services/command/TaskCommandExecutor.php`
+- `common/components/CommandRegistryComponent.php`
+- `common/services/commands/CommandRegistry.php`
+- `common/modules/tasks/commands/*`
 
 ## Integration Points
 - `common/components/TelegramComponent.php` wraps Telegram SDK calls

@@ -11,14 +11,11 @@ return [
     'id' => 'app-frontend',
     'name' => 'Task Tracker',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => ['log', 'moduleBootstrap'],
     'controllerNamespace' => 'frontend\controllers',
     'modules' => [
         'auth' => [
             'class' => \frontend\modules\auth\Module::class,
-        ],
-        'tasks' => [
-            'class' => \common\modules\tasks\Module::class,
         ],
         'users' => [
             'class' => \common\modules\users\Module::class,

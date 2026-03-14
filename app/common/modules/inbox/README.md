@@ -62,8 +62,9 @@ Attachment roles currently used:
 6. `AudioNormalizationService` from `common/services/speechTools/normalization` checks whether the original audio format is acceptable for transcription
 7. if needed, audio is converted to a normalized `wav` file and linked as `InboxMessageAttachment(role=normalized)`
 8. STT service produces text
-9. the text is resolved through shared task command services
-10. the message is marked `processed` or `failed`
+9. the text is sent to the shared `commandRegistry`
+10. the registry resolves and executes the matched task command
+11. the message is marked `processed` or `failed`
 
 ## Services
 - `services/InboxMessageService.php`
@@ -79,8 +80,9 @@ Attachment roles currently used:
 - `common/modules/fileManager` provides file persistence
 - `common/components/SpeechToTextComponent.php` provides the Yii application wrapper for STT
 - `common/services/speechTools` provides real and stub STT implementations
-- `common/modules/tasks/services/command` parses and executes recognized commands
-- `console/controllers/InboxController.php` runs the background worker command
+- `common/components/CommandRegistryComponent.php` routes transcribed text to registered commands
+- `common/modules/tasks/commands` provide task/project command implementations
+- `common/modules/inbox/controllers/console/InboxController.php` runs the background worker command
 
 ## Console Command
 ```bash

@@ -81,6 +81,33 @@ Without `OPENAI_API_KEY`, the application falls back to the local STT stub for d
 - Speech tools service layer: `app/common/services/speechTools/README.md`
 - Yii STT wrapper component: `app/common/components/SpeechToTextComponent.php`
 
+## Module Bootstrap
+The project uses a shared bootstrap component:
+- `app/common/components/ModuleBootstrapComponent.php`
+
+It is registered in every app (`frontend`, `backend`, `api`, `console`) through the standard Yii `bootstrap` section.
+
+What it does:
+- scans configured `modules`
+- looks for `bootstrapClass` in each module definition
+- instantiates that bootstrap class and runs `bootstrap($app)`
+- removes `bootstrapClass` from the final module config before Yii creates the module
+
+This lets a module register its own runtime integrations without hardcoding them in global config.
+
+Current example:
+- `common/modules/tasks/Bootstrap.php` registers task commands in `commandRegistry`
+
+Example module config:
+```php
+'modules' => [
+    'tasks' => [
+        'class' => \common\modules\tasks\Module::class,
+        'bootstrapClass' => \common\modules\tasks\Bootstrap::class,
+    ],
+],
+```
+
 ## Notes
 - Telegram webhook URL must include `api-key` query param.
 - Telegram webhook controller has CSRF disabled.

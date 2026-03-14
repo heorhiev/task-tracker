@@ -2,13 +2,12 @@
 
 namespace common\modules\inbox\services;
 
+use common\components\CommandRegistryComponent;
 use common\components\SpeechToTextComponent;
 use common\modules\fileManager\models\StoredFile;
 use common\modules\fileManager\services\FileStorageService;
 use common\modules\inbox\models\InboxMessage;
 use common\modules\inbox\models\InboxMessageAttachment;
-use common\modules\tasks\services\command\TaskCommandExecutor;
-use common\modules\tasks\services\command\TaskCommandParser;
 use common\services\speechTools\normalization\AudioNormalizationService;
 use common\services\speechTools\SpeechToTextServiceInterface;
 use common\services\speechTools\StubSpeechToTextService;
@@ -22,8 +21,7 @@ class InboxVoiceProcessingService
     private FileStorageService $fileStorageService;
     private AudioNormalizationService $audioNormalizationService;
     private SpeechToTextServiceInterface $speechToTextService;
-    private TaskCommandParser $taskCommandParser;
-    private TaskCommandExecutor $taskCommandExecutor;
+    private CommandRegistryComponent $commandRegistry;
 
     public function __construct(
         InboxMessageStatusService $statusService = null,
@@ -31,8 +29,7 @@ class InboxVoiceProcessingService
         FileStorageService $fileStorageService = null,
         AudioNormalizationService $audioNormalizationService = null,
         SpeechToTextServiceInterface $speechToTextService = null,
-        TaskCommandParser $taskCommandParser = null,
-        TaskCommandExecutor $taskCommandExecutor = null
+        CommandRegistryComponent $commandRegistry = null
     )
     {
         $this->statusService = $statusService ?? new InboxMessageStatusService();
@@ -40,8 +37,7 @@ class InboxVoiceProcessingService
         $this->fileStorageService = $fileStorageService ?? new FileStorageService();
         $this->audioNormalizationService = $audioNormalizationService ?? new AudioNormalizationService();
         $this->speechToTextService = $speechToTextService ?? $this->createSpeechToTextService();
-        $this->taskCommandParser = $taskCommandParser ?? new TaskCommandParser();
-        $this->taskCommandExecutor = $taskCommandExecutor ?? new TaskCommandExecutor();
+        $this->commandRegistry = $commandRegistry ?? Yii::$app->commandRegistry;
     }
 
     /**
@@ -76,18 +72,25 @@ class InboxVoiceProcessingService
                 throw new Exception('Speech-to-text returned an empty transcription.');
             }
 
-            $commandData = $this->taskCommandParser->parse($transcriptionText);
-            $handlerMessage = $this->taskCommandExecutor->execute($commandData, $message->external_chat_id);
-            $resolvedCommand = json_encode($commandData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $result = $this->commandRegistry->execute($transcriptionText, [
+                'chatId' => $message->external_chat_id,
+                'source' => $message->source,
+                'messageId' => $message->id,
+                'externalUserId' => $message->external_user_id,
+            ]);
+            $resolvedCommand = json_encode([
+                'command' => $result->commandName,
+                'payload' => $result->payload,
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
             if (!$this->statusService->markProcessed($message, $transcriptionText, $resolvedCommand ?: null)) {
                 throw new Exception('Unable to mark inbox message as processed.');
             }
 
             return [
-                'command' => (string) ($commandData['command'] ?? ''),
-                'payload' => (array) ($commandData['payload'] ?? []),
-                'handlerMessage' => $handlerMessage,
+                'command' => $result->commandName,
+                'payload' => $result->payload,
+                'handlerMessage' => $result->message,
                 'transcriptionText' => $transcriptionText,
             ];
         } catch (\Throwable $exception) {

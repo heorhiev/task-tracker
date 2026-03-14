@@ -11,7 +11,7 @@ return [
     'id' => 'app-api',
     'name' => 'Task Tracker API',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => ['log', 'moduleBootstrap'],
     'controllerNamespace' => 'api\\controllers',
     'defaultRoute' => 'telegramBot/default/index',
     'modules' => [

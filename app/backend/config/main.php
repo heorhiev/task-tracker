@@ -11,7 +11,7 @@ return [
     'id' => 'app-backend',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'backend\controllers',
-    'bootstrap' => ['log'],
+    'bootstrap' => ['log', 'moduleBootstrap'],
     'modules' => [
         'users' => [
             'class' => \common\modules\users\Module::class,

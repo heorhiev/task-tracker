@@ -6,9 +6,21 @@ return [
         '@npm'   => '@vendor/npm-asset',
     ],
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
+    'modules' => [
+        'tasks' => [
+            'class' => \common\modules\tasks\Module::class,
+            'bootstrapClass' => \common\modules\tasks\Bootstrap::class,
+        ],
+    ],
     'components' => [
         'cache' => [
             'class' => \yii\caching\FileCache::class,
+        ],
+        'moduleBootstrap' => [
+            'class' => \common\components\ModuleBootstrapComponent::class,
+        ],
+        'commandRegistry' => [
+            'class' => \common\components\CommandRegistryComponent::class,
         ],
         'speechToText' => [
             'class' => \common\components\SpeechToTextComponent::class,

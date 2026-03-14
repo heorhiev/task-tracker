@@ -8,6 +8,7 @@ Task, idea, and project domain logic shared between frontend and API.
 - Task service: `services/TaskService.php`
 - Idea service: `services/IdeaService.php`
 - Project service: `services/ProjectService.php`
+- Text commands: `commands/*`
 - UI controllers: `controllers/DefaultController.php`, `controllers/IdeaController.php`, `controllers/ProjectController.php`
 
 ## Key rules
@@ -20,6 +21,16 @@ Task, idea, and project domain logic shared between frontend and API.
 - Task: create/update/delete + set task to default project
 - Idea: create/update/delete + change status
 - Project: create/update/status + set default + protect default from deletion
+
+## Command Integration
+Task-related text commands are implemented as separate command classes in `commands/*` and are registered in the shared `commandRegistry` component.
+
+Current command set:
+- `create project "name"`
+- `set default project "name"`
+- `default project`
+- `create task "title"`
+- `create idea "title"`
 
 ## DB migrations (important)
 - `m260307_000001_create_task_table`
