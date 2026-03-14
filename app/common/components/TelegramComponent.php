@@ -3,6 +3,7 @@
 namespace common\components;
 
 use Telegram\Bot\Api;
+use Telegram\Bot\Objects\File;
 use Telegram\Bot\Objects\Update;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -27,6 +28,18 @@ class TelegramComponent extends Component
             'chat_id' => $chatId,
             'text' => $text,
         ]);
+    }
+
+    public function getFile(string $fileId): File
+    {
+        return $this->createClient()->getFile([
+            'file_id' => $fileId,
+        ]);
+    }
+
+    public function downloadFile(File|string $file, string $filename): string
+    {
+        return $this->createClient()->downloadFile($file, $filename);
     }
 
     public function isStartCommand(string $text): bool

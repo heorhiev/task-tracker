@@ -46,6 +46,12 @@ services:
       DB_USER: task_user
       DB_PASSWORD: task_password
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_STT_MODEL: ${OPENAI_STT_MODEL:-gpt-4o-mini-transcribe}
+      OPENAI_STT_TIMEOUT: ${OPENAI_STT_TIMEOUT:-120}
+      OPENAI_STT_PROMPT: ${OPENAI_STT_PROMPT:-}
+      OPENAI_STT_BASE_URL: ${OPENAI_STT_BASE_URL:-https://api.openai.com/v1}
+      FFMPEG_BINARY: ${FFMPEG_BINARY:-ffmpeg}
     volumes:
       - ./app:/var/www/html
 
