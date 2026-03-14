@@ -1,13 +1,13 @@
 <?php
 
-namespace console\controllers;
+namespace common\modules\inbox\controllers\console;
 
 use common\modules\inbox\models\InboxMessage;
 use common\modules\inbox\services\InboxMessageService;
 use common\modules\inbox\services\InboxVoiceProcessingService;
-use yii\helpers\Console;
 use yii\console\Controller;
 use yii\console\ExitCode;
+use yii\helpers\Console;
 
 class InboxController extends Controller
 {

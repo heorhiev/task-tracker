@@ -20,7 +20,15 @@ return [
         'fixture' => [
             'class' => \yii\console\controllers\FixtureController::class,
             'namespace' => 'common\fixtures',
-          ],
+        ],
+        'inbox' => [
+            'class' => \common\modules\inbox\controllers\console\InboxController::class,
+        ],
+    ],
+    'modules' => [
+        'inbox' => [
+            'class' => \common\modules\inbox\Module::class,
+        ],
     ],
     'components' => [
         'log' => [
